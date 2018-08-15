@@ -1,0 +1,9 @@
+# node_modules
+node_modules/
+
+# flow-typed
+flow-typed/
+coverage/
+
+# dist
+dist/

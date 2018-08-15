@@ -1,0 +1,87 @@
+# HierarchyTree
+
+### Table of Contents
+
+-   [constructor][1]
+    -   [Parameters][2]
+-   [findMaxHierarchy][3]
+-   [nextChildrenItems][4]
+    -   [Parameters][5]
+-   [buildTree][6]
+    -   [Parameters][7]
+-   [getTree][8]
+
+## constructor
+
+### Parameters
+
+-   `data` **[Array][9]&lt;[Object][10]>** Array of objects to be turned into a tree
+-   `options` **[Object][10]** Additional options for HierarchyTree
+    -   `options.childKey` **[string][11]** Key in the tree where 
+        		children will be stored (optional, default `children`)
+    -   `options.hierarchyKey` **[string][11]** Key in the input data
+        		where hierarchy level is indicated (optional, default `hierarchy`)
+    -   `options.maxHierarchy` **[number][12]?** Maximum hierarchy depth. If not
+        		provided it will be recursively found
+    -   `options.hierarchyStart` **[number][12]** First level where the
+        		hierarchies will start (optional, default `1`)
+
+## findMaxHierarchy
+
+Finds the depth of the tree.
+
+Returns **void** 
+
+## nextChildrenItems
+
+A generator function slicing items into subsets of
+		parents with its children.
+
+### Parameters
+
+-   `items` **[Array][9]&lt;[Object][10]>** (Sub)Set of items in data array
+-   `hierarchy` **[number][12]** Level (depth) of current hierarchy
+
+Returns **[Array][9]&lt;[Object][10]>** Array of objects with a parent and its children
+
+## buildTree
+
+### Parameters
+
+-   `items` **[Array][9]&lt;[Object][10]>** (Sub)Set of items in data array which will be
+    		used to create the tree. Each set has parent and its children.
+-   `hierarchy` **[number][12]** Level (depth) of current hierarchy
+
+Returns **[Array][9]&lt;[Object][10]>** Array of objects where each element has parent
+		spread into the object and its children as 'childKey' prop in
+		then object. Does not prouce empty array with 'childKey' on leaf
+		child.
+
+## getTree
+
+Returns **[Array][9]&lt;[Object][10]>** Tree. It is built once, returns same tree
+		on each call.
+
+[1]: #constructor
+
+[2]: #parameters
+
+[3]: #findmaxhierarchy
+
+[4]: #nextchildrenitems
+
+[5]: #parameters-1
+
+[6]: #buildtree
+
+[7]: #parameters-2
+
+[8]: #gettree
+
+[9]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[10]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+
+[11]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+
+[12]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number

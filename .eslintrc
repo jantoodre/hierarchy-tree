@@ -1,0 +1,30 @@
+{
+    "extends": [
+        "eslint-config-airbnb-base",
+        "plugin:flowtype/recommended"
+    ],
+    "plugins": [
+        "import",
+        "flowtype"
+    ],
+    "rules": {
+        "indent": [
+            "error",
+            "tab"
+        ],
+        "no-tabs": "off",
+        "flowtype/require-valid-file-annotation": [
+            2,
+            "always",
+            {
+                "annotationStyle": "line"
+            }
+		],
+		"import/no-extraneous-dependencies": ["error", {"packageDir": "./"}]
+    },
+    "parserOptions": {
+        "ecmaFeatures": {
+            "modules": true
+        }
+    }
+}
