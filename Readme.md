@@ -20,8 +20,8 @@ For code documentation check [HierarchyTree](HierarchyTree.md)
 <p>
 
 ```javascript
-// const HierarchyTree = require('hierarchy-tree').default; cjs
-import HierarchyTree from 'hierarchy-tree';
+// const HierarchyTree = require('@jtoodre/hierarchy-tree').default; cjs
+import HierarchyTree from '@jtoodre/hierarchy-tree';
 
 const input = [
 	{ generation: 1, name: "Kate Cosby", job: "Food Chemist" },
