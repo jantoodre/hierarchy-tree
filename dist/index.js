@@ -22,16 +22,22 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var HierarchyTree = function () {
 	/**
   * 
-  * @param {Object[]} data - Array of objects to be turned into a tree 
-  * @param {Object} options - Additional options for HierarchyTree
-  * @param {string} [options.childKey=children] - Key in the tree where 
-  * 		children will be stored
-  * @param {string} [options.hierarchyKey=hierarchy] - Key in the input data
-  * 		where hierarchy level is indicated
+  * @param {Object[]} data - Array of objects to be turned into a tree.
+  * @param {Object} options - Additional options for HierarchyTree.
+  * @param {string} [options.childKey='children'] - Key in the tree where 
+  * 		children will be stored. When no children this property is undefined.
+  * @param {string} [options.hierarchyKey='hierarchy'] - Key in the input data
+  * 		where hierarchy level is indicated.
   * @param {number} [options.maxHierarchy] - Maximum hierarchy depth. If not
-  * 		provided it will be recursively found
+  * 		provided it will be recursively found.
   * @param {number} [options.hierarchyStart=1] - First level where the
-  * 		hierarchies will start
+  * 		hierarchies will start.
+  * @param {parentObjects} [options.parentObjects=false] - Gives child its
+  * 		parent items (with 'parentKeys' properties).
+  * @param {parentKey} [options.parentKey='parents'] - Key for object where childrens'
+  * 		parents will be stored. When item has no parents this property is undefined.
+  * @param {parentKeys} [options.parentKeys=[]] - When 'parentObjects' is
+  * 		true, each child will have its parents stored with these properties.
   */
 	function HierarchyTree(data, options) {
 		_classCallCheck(this, HierarchyTree);
@@ -42,7 +48,13 @@ var HierarchyTree = function () {
 		    hierarchyKey = _options$hierarchyKey === undefined ? 'hierarchy' : _options$hierarchyKey,
 		    _options$hierarchySta = options.hierarchyStart,
 		    hierarchyStart = _options$hierarchySta === undefined ? 1 : _options$hierarchySta,
-		    maxHierarchy = options.maxHierarchy;
+		    maxHierarchy = options.maxHierarchy,
+		    _options$parentObject = options.parentObjects,
+		    parentObjects = _options$parentObject === undefined ? false : _options$parentObject,
+		    _options$parentKeys = options.parentKeys,
+		    parentKeys = _options$parentKeys === undefined ? [] : _options$parentKeys,
+		    _options$parentKey = options.parentKey,
+		    parentKey = _options$parentKey === undefined ? 'parents' : _options$parentKey;
 
 
 		this.data = data;
@@ -50,6 +62,9 @@ var HierarchyTree = function () {
 		this.hierarchyKey = hierarchyKey;
 		this.hierarchyStart = hierarchyStart;
 		this.tree = [];
+		this.parentObjects = parentObjects;
+		this.parentKeys = parentKeys;
+		this.parentKey = parentKey;
 		if (maxHierarchy) {
 			this.maxHierarchy = maxHierarchy;
 		} else {
@@ -80,9 +95,9 @@ var HierarchyTree = function () {
 		/**
    * A generator function slicing items into subsets of
    * 		parents with its children.
-   * @param {Object[]} items - (Sub)Set of items in data array
-   * @param {number} hierarchy - Level (depth) of current hierarchy
-   * @returns {Object[]} - Array of objects with a parent and its children  
+   * @param {Object[]} items - (Sub)Set of items in data array.
+   * @param {number} hierarchy - Level (depth) of current hierarchy.
+   * @returns {Object[]} - Array of objects with a parent and its children.
    */
 
 	}, {
@@ -142,7 +157,9 @@ var HierarchyTree = function () {
    * 
    * @param {Object[]} items - (Sub)Set of items in data array which will be
    * 		used to create the tree. Each set has parent and its children.
-   * @param {number} hierarchy - Level (depth) of current hierarchy
+   * @param {number} hierarchy - Level (depth) of current hierarchy.
+   * @param {Object[]} parents - Parent nodes of current set with keys specified by
+   * 		'parentKeys'.
    * @returns {Object[]} - Array of objects where each element has parent
    * 		spread into the object and its children as 'childKey' prop in
    * 		then object. Does not prouce empty array with 'childKey' on leaf
@@ -154,6 +171,8 @@ var HierarchyTree = function () {
 		value: function buildTree(items, hierarchy) {
 			var _this2 = this;
 
+			var parents = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+
 			var itemSetGenerator = [].concat(_toConsumableArray(this.nextChildrenItems(items, hierarchy)));
 			var tree = [];
 			var index = 0;
@@ -161,10 +180,21 @@ var HierarchyTree = function () {
 			    maxHierarchy = this.maxHierarchy;
 
 			itemSetGenerator.forEach(function (itemSet) {
+				var newParents = [].concat(_toConsumableArray(parents));
+				var currentItem = {};
 				tree.push(_extends({}, itemSet[0]));
 				if (hierarchy < maxHierarchy && itemSet.length > 0) {
+					if (_this2.parentObjects) {
+						_this2.parentKeys.reduce(function (acc, key) {
+							acc[key] = itemSet[0][key];
+							return acc;
+						}, currentItem);
+					}
 					var childrenItems = [].concat(_toConsumableArray(itemSet.slice(1, itemSet.length)));
-					tree[index][childKey] = _this2.buildTree(childrenItems, hierarchy + 1);
+					tree[index][childKey] = _this2.buildTree(childrenItems, hierarchy + 1, [].concat(_toConsumableArray(newParents), [currentItem]));
+				}
+				if (_this2.parentObjects) {
+					tree[index][_this2.parentKey] = newParents.length > 0 ? newParents : undefined;
 				}
 				index += 1;
 			});
@@ -182,7 +212,7 @@ var HierarchyTree = function () {
 		key: 'getTree',
 		value: function getTree() {
 			if (this.tree && this.tree.length === 0) {
-				this.tree = this.buildTree(this.data, this.hierarchyStart);
+				this.tree = this.buildTree(this.data, this.hierarchyStart, []);
 			}
 			return this.tree;
 		}
