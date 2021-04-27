@@ -1,5 +1,3 @@
-// @flow
-
 type Options = {
 	childKey?: string,
 	hierarchyKey?: string,
