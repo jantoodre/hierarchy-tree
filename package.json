@@ -1,6 +1,6 @@
 {
 	"name": "@jtoodre/hierarchy-tree",
-	"version": "0.3.0-1",
+	"version": "1.0.0",
 	"description": "Creates tree from objects",
 	"main": "./dist/index.js",
 	"repository": "https://github.com/jantoodre/hierarchy-tree.git",
