@@ -1,5 +1,3 @@
-// @flow
-
 type Options = {
 	childKey?: string,
 	hierarchyKey?: string,
@@ -10,20 +8,20 @@ type Options = {
 	parentKey?: string,
 }
 
-class HierarchyTree {
-	data: Object[]
+class HierarchyTree<T> {
+	data: T[]
 	childKey: string
 	hierarchyKey: string
 	hierarchyStart: number
 	maxHierarchy: number
-	tree: ?Object[]
+	tree: T[] | undefined
 	parentObjects: boolean
 	parentKeys: string[]
 	parentKey: string
 	/**
 	 * 
-	 * @param {Object[]} data - Array of objects to be turned into a tree.
-	 * @param {Object} options - Additional options for HierarchyTree.
+	 * @param {T[]} data - Array of objects to be turned into a tree.
+	 * @param {T} options - Additional options for HierarchyTree.
 	 * @param {string} [options.childKey='children'] - Key in the tree where 
 	 * 		children will be stored. When no children this property is undefined.
 	 * @param {string} [options.hierarchyKey='hierarchy'] - Key in the input data
@@ -39,7 +37,7 @@ class HierarchyTree {
 	 * @param {parentKeys} [options.parentKeys=[]] - When 'parentObjects' is
 	 * 		true, each child will have its parents stored with these properties.
 	 */
-	constructor(data: Object[], options: Options) {
+	constructor(data: T[], options: Options) {
 		const {
 			childKey = 'children',
 			hierarchyKey = 'hierarchy',
@@ -72,8 +70,10 @@ class HierarchyTree {
 	findMaxHierarchy(): void {
 		const { hierarchyKey } = this;
 		this.data.forEach((item) => {
-			if (item[hierarchyKey] > this.maxHierarchy) {
-				this.maxHierarchy = item[hierarchyKey];
+			// @ts-ignore
+			const hierarchy = item[hierarchyKey];
+			if (hierarchy > this.maxHierarchy) {
+				this.maxHierarchy = hierarchy;
 			}
 		});
 	}
@@ -81,18 +81,22 @@ class HierarchyTree {
 	/**
 	 * A generator function slicing items into subsets of
 	 * 		parents with its children.
-	 * @param {Object[]} items - (Sub)Set of items in data array.
+	 * @param {T[]} items - (Sub)Set of items in data array.
 	 * @param {number} hierarchy - Level (depth) of current hierarchy.
-	 * @returns {Object[]} - Array of objects with a parent and its children.
+	 * @returns {T[]} - Array of objects with a parent and its children.
 	 */
 	* nextChildrenItems(
-		items: Object[],
+		items: T[],
 		hierarchy: number,
-	): Generator<Object[], void, Object[]> {
+	): Generator<T[], void, T[]> {
 		let start = 0;
 		let end = 1;
 		while (items.length > end) {
-			if (items[end][this.hierarchyKey] === hierarchy) {
+			const lastItem = items[end];
+			// @ts-ignore
+			const lastItemHierarchy = lastItem[this.hierarchyKey]
+
+			if (lastItemHierarchy === hierarchy) {
 				const children = items.slice(start, end);
 				yield children;
 				start = end;
@@ -107,41 +111,47 @@ class HierarchyTree {
 
 	/**
 	 * 
-	 * @param {Object[]} items - (Sub)Set of items in data array which will be
+	 * @param {T[]} items - (Sub)Set of items in data array which will be
 	 * 		used to create the tree. Each set has parent and its children.
 	 * @param {number} hierarchy - Level (depth) of current hierarchy.
-	 * @param {Object[]} parents - Parent nodes of current set with keys specified by
+	 * @param {T[]} parents - Parent nodes of current set with keys specified by
 	 * 		'parentKeys'.
-	 * @returns {Object[]} - Array of objects where each element has parent
+	 * @returns {T[]} - Array of objects where each element has parent
 	 * 		spread into the object and its children as 'childKey' prop in
 	 * 		then object. Does not prouce empty array with 'childKey' on leaf
 	 * 		child.
 	 */
-	buildTree(items: Object[], hierarchy: number, parents: Object[] = []): Object[] | void {
+	buildTree(items: T[], hierarchy: number, parents: T[] = []): T[] | undefined {
+		// @ts-ignore
 		const itemSetGenerator = [...this.nextChildrenItems(items, hierarchy)];
-		const tree = [];
+		const tree = [] as T[];
 		let index = 0;
 		const { childKey, maxHierarchy } = this;
 		itemSetGenerator.forEach((itemSet) => {
 			const newParents = [...parents];
 			const currentItem = {};
 			tree.push({ ...itemSet[0] });
+			const item = tree[index];
 			if (hierarchy < maxHierarchy && itemSet.length > 0) {
 				if (this.parentObjects) {
 					this.parentKeys.reduce((acc, key) => {
+						// @ts-ignore
 						acc[key] = itemSet[0][key];
 						return acc;
 					}, currentItem);
 				}
 				const childrenItems = [...(itemSet.slice(1, itemSet.length))];
-				tree[index][childKey] = this.buildTree(
+				
+				// @ts-ignore
+				item[childKey] = this.buildTree(
 					childrenItems,
 					hierarchy + 1,
-					[...newParents, currentItem],
+					[...newParents, currentItem as T],
 				);
 			}
 			if (this.parentObjects) {
-				tree[index][this.parentKey] =
+				// @ts-ignore
+				item[this.parentKey] =
 					newParents.length > 0 ? newParents : undefined;
 			}
 			index += 1;
@@ -149,13 +159,14 @@ class HierarchyTree {
 		if (tree.length > 0) {
 			return tree;
 		}
+		return undefined;
 	}
 
 	/**
-	 * @returns {Object[]} - Tree. It is built once, returns same tree
+	 * @returns {T[]} - Tree. It is built once, returns same tree
 	 * 		on each call.
 	 */
-	getTree(): ?Object[] {
+	getTree(): T[] | undefined {
 		if (this.tree && this.tree.length === 0) {
 			this.tree = this.buildTree(this.data, this.hierarchyStart, []);
 		}

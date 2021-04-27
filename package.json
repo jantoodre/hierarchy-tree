@@ -1,6 +1,6 @@
 {
 	"name": "@jtoodre/hierarchy-tree",
-	"version": "0.2.0",
+	"version": "1.0.0",
 	"description": "Creates tree from objects",
 	"main": "./dist/index.js",
 	"repository": "https://github.com/jantoodre/hierarchy-tree.git",
@@ -8,7 +8,7 @@
 	"license": "MIT",
 	"private": false,
 	"scripts": {
-		"build": "babel src --out-dir dist",
+		"build": "tsc",
 		"prepublishOnly": "npm run build"
 	},
 	"devDependencies": {
@@ -23,9 +23,7 @@
 		"babel-preset-stage-0": "^6.24.1",
 		"eslint": "^4.19.1",
 		"eslint-config-airbnb": "^16.1.0",
-		"eslint-plugin-flowtype": "^2.40.1",
-		"flow-bin": "^0.68.0",
-		"flow-typed": "^2.3.0"
+		"typescript": "^4.2.4"
 	},
 	"keywords": [
 		"hierarchy",
